@@ -14,7 +14,8 @@ var pour = {
   player: null,
   // track: null,
   // track2: null,
-  remixed: null
+  remixed: null,
+  offlineMode: true
 };
 
 pour.init = function init() {
@@ -29,29 +30,57 @@ pour.init = function init() {
     this.player = this.remixer.getPlayer();
     $("#info").text("Loading analysis data...");
 
-    var chain = createRemixLoadChain(this.remixer, [
-        {
-          trackId: this.trackID,
-          trackURL: this.trackURL
-        },
-        {
-          trackId: this.trackID2,
-          trackURL: this.trackURL2
+    if (this.offlineMode) {
+      this.initOffline();
+    }
+    else {
+      var chain = createRemixLoadChain(this.remixer, [
+          {
+            trackId: this.trackID,
+            trackURL: this.trackURL
+          },
+          {
+            trackId: this.trackID2,
+            trackURL: this.trackURL2
+          }
+        ],
+        this.reportLoadProgress, function tracksLoaded(error, tracks) {
+          if (error) {
+            $("#info").text('Error loading tracks: ' + error);
+          }
+          else {
+            this.mixTracks(tracks[0].analysis, tracks[1].analysis);
+          }
         }
-      ],
-      this.reportLoadProgress, function tracksLoaded(error, tracks) {
-        if (error) {
-          $("#info").text('Error loading tracks: ' + error);
-        }
-        else {
-          this.mixTracks(tracks[0].analysis, tracks[1].analysis);
+        .bind(this)
+      );
+      chain.loadChain();
+    }
+  }
+};
+
+pour.initOffline = function initOffline() {
+  this.remixer.remixTrack({
+    status: 'complete',
+    analysis: spanishFleaResponse.query.results.json,
+  },
+  this.trackURL,
+  function processedTrack1(track1, loadPercentage1) {
+    if (loadPercentage1 === 100 && track1.status === 'ok') {
+      this.remixer.remixTrack({
+        status: 'complete',
+        analysis: championsResponse.query.results.json,
+      },
+      this.trackURL2,
+      function processedTrack2(track2, loadPercentage2) {
+        if (loadPercentage2 === 100 && track2.status === 'ok') {
+          this.mixTracks(track1.analysis, track2.analysis);
         }
       }
-      .bind(this)
-    );
-    chain.loadChain();
+      .bind(this));
+    }
   }
-
+  .bind(this));
 };
 
 pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
@@ -104,4 +133,5 @@ return pour;
 
 var pour = createPour();
 pour.init();
+
 
