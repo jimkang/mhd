@@ -55,8 +55,13 @@ pour.init = function init() {
 pour.mixTracks = function mixTracks(track1, track2) {
   // Extract the first and third beats of track 1 with the second and fourth 
   // beats of track 2.
-  remixed = [];
+  this.remixed = [];
   var meter = parseInt(track1.analysis.track.time_signature, 10);
+  if (meter === 1) {
+    // If it gives us a meter of 1, I'm guessing it couldn't figure it out.
+    // Try 4.
+    meter = 4;
+  }
   var numberOfBeats = Math.min(track1.analysis.beats.length, 
     track2.analysis.beats.length);
   var numberOfFSegs = Math.min(
