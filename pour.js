@@ -6,13 +6,15 @@ var pour = {
   trackURL: 'Spanish Flea.mp3',  
   // trackID: 'TRCYWPQ139279B3308',
   // trackURL: '1451_-_D.mp3',
-  trackID2: 'TRBIBEW13936EB37C9',
-  trackURL2: '1451_-_E.mp3',
-  // remixer: null,
-  // player: null,
+  // trackID2: 'TRBIBEW13936EB37C9',
+  // trackURL2: '1451_-_E.mp3',
+  trackID2: 'TRMPFJX12E5AB73FB6',
+  trackURL2: '17 We Are The Champions.mp3',
+  remixer: null,
+  player: null,
   // track: null,
   // track2: null,
-  // remixed: null
+  remixed: null
 };
 
 pour.init = function init() {
@@ -23,11 +25,11 @@ pour.init = function init() {
   else {
     var context = new webkitAudioContext();
 
-    remixer = createJRemixer(context, $, this.apiKey);
-    player = remixer.getPlayer();
+    this.remixer = createJRemixer(context, $, this.apiKey);
+    this.player = this.remixer.getPlayer();
     $("#info").text("Loading analysis data...");
 
-    var chain = createRemixLoadChain(remixer, [
+    var chain = createRemixLoadChain(this.remixer, [
         {
           trackId: this.trackID,
           trackURL: this.trackURL
@@ -70,16 +72,31 @@ pour.mixTracks = function mixTracks(track1, track2) {
   
   for (var i=0; i < numberOfFSegs; i++) {
     if (i % meter === 0 || i % meter === 2) {
-      remixed.push(track1.analysis.fsegments[i]);
-    } else if (i % meter === 1 || i % meter === 3) {
-      remixed.push(track2.analysis.fsegments[i]);
+      this.remixed.push(track1.analysis.fsegments[i]);
+    } 
+    else if (i % meter === 1 || i % meter === 3) {
+      this.remixed.push(track2.analysis.fsegments[i]);
     }
   }
+
+  // for (var i=0; i < numberOfBeats; i++) {
+  //   if (i % meter === 0 || i % meter === 2) {
+  //     this.remixed.push(track1.analysis.beats[i]);
+  //   } 
+  //   else if (i % meter === 1 || i % meter === 3) {
+  //     this.remixed.push(track2.analysis.beats[i]);
+  //   }
+  // }
+
   $("#info").text("Remix complete!");
 };
 
 pour.reportLoadProgress = function reportLoadProgress(track, percent) {
   $("#info").text(percent + "% of track loaded...");
+};
+
+pour.play = function play() {
+  this.player.play(0, this.remixed);
 };
 
 return pour;
