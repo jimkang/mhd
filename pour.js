@@ -44,7 +44,7 @@ pour.init = function init() {
           $("#info").text('Error loading tracks: ' + error);
         }
         else {
-          this.mixTracks(tracks[0], tracks[1]);
+          this.mixTracks(tracks[0].analysis, tracks[1].analysis);
         }
       }
       .bind(this)
@@ -54,28 +54,28 @@ pour.init = function init() {
 
 };
 
-pour.mixTracks = function mixTracks(track1, track2) {
+pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
   // Extract the first and third beats of track 1 with the second and fourth 
   // beats of track 2.
   this.remixed = [];
-  var meter = parseInt(track1.analysis.track.time_signature, 10);
+  var meter = parseInt(track1Analysis.track.time_signature, 10);
   if (meter === 1) {
     // If it gives us a meter of 1, I'm guessing it couldn't figure it out.
     // Try 4.
     meter = 4;
   }
-  var numberOfBeats = Math.min(track1.analysis.beats.length, 
-    track2.analysis.beats.length);
+  var numberOfBeats = Math.min(track1Analysis.beats.length, 
+    track2Analysis.beats.length);
   var numberOfFSegs = Math.min(
-      track1.analysis.fsegments.length, 
-      track2.analysis.fsegments.length);
+      track1Analysis.fsegments.length, 
+      track2Analysis.fsegments.length);
   
   for (var i=0; i < numberOfFSegs; i++) {
     if (i % meter === 0 || i % meter === 2) {
-      this.remixed.push(track1.analysis.fsegments[i]);
+      this.remixed.push(track1Analysis.fsegments[i]);
     } 
     else if (i % meter === 1 || i % meter === 3) {
-      this.remixed.push(track2.analysis.fsegments[i]);
+      this.remixed.push(track2Analysis.fsegments[i]);
     }
   }
 
@@ -84,7 +84,7 @@ pour.mixTracks = function mixTracks(track1, track2) {
   //     this.remixed.push(track1.analysis.beats[i]);
   //   } 
   //   else if (i % meter === 1 || i % meter === 3) {
-  //     this.remixed.push(track2.analysis.beats[i]);
+  //     this.remixed.push(track2Analysis.beats[i]);
   //   }
   // }
 
