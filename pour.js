@@ -12,15 +12,16 @@ var pour = {
   // trackURL: '1451_-_D.mp3',
   // trackID2: 'TRBIBEW13936EB37C9',
   // trackURL2: '1451_-_E.mp3',
-  trackID2: 'TRMPFJX12E5AB73FB6',
-  trackURL2: '17 We Are The Champions.mp3',
+  // trackID2: 'TRMPFJX12E5AB73FB6',
+  // trackURL2: '17 We Are The Champions.mp3',
   remixer: null,
   player: null,
   // track: null,
   // track2: null,
   remixed: null,
   offlineMode: true,
-  context: null
+  context: null,
+  notesLimit: 0
 };
 
 pour.init = function init() {
@@ -42,10 +43,6 @@ pour.init = function init() {
           {
             trackId: this.trackID,
             trackURL: this.trackURL
-          },
-          {
-            trackId: this.trackID2,
-            trackURL: this.trackURL2
           }
         ],
         this.reportLoadProgress, function tracksLoaded(error, tracks) {
@@ -53,7 +50,7 @@ pour.init = function init() {
             $("#info").text('Error loading tracks: ' + error);
           }
           else {
-            this.mixTracks(tracks[0].analysis, tracks[1].analysis);
+            this.mixTracks(tracks[0].analysis);
           }
         }
         .bind(this)
@@ -71,39 +68,14 @@ pour.initOffline = function initOffline() {
   this.trackURL,
   function processedTrack1(track1, loadPercentage1) {
     if (loadPercentage1 === 100 && track1.status === 'ok') {
-      this.remixer.remixTrack({
-        status: 'complete',
-        analysis: championsResponse.query.results.json,
-      },
-      this.trackURL2,
-      function processedTrack2(track2, loadPercentage2) {
-        if (loadPercentage2 === 100 && track2.status === 'ok') {
-          this.mixTracks(track1.analysis, track2.analysis);
-        }
-      }
-      .bind(this));
+      this.mixTracks(track1.analysis);
     }
   }
   .bind(this));
 };
 
-pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
+pour.mixTracks = function mixTracks(track1Analysis) {
   this.remixed = [];
-  // Extract the first and third beats of track 1 with the second and fourth 
-  // beats of track 2.
-
-  var meter = parseInt(track1Analysis.track.time_signature, 10);
-  if (meter === 1) {
-    // If it gives us a meter of 1, I'm guessing it couldn't figure it out.
-    // Try 4.
-    meter = 4;
-  }
-
-  var notes1 = track1Analysis.tatums;
-  var notes2 = track2Analysis.tatums;
-  // var notesLimit = Math.min(notes1.length, notes2.length);
-  var notesLimit = notes2.length;
-  var shiftedLastNote = false;
 
   function randomlyScrewUpNote(note) {
     if (!shiftedLastNote && (Math.floor(Math.random() * 4) % 4) === 0) {
@@ -156,16 +128,18 @@ pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
       nextNote.start += diff;
     }
   }
+
+  var notes1 = track1Analysis.tatums;
+  this.notesLimit = notes1.length;
+  var shiftedLastNote = false;
+
   // notes2 = _.sortBy(notes2, function getLoudness(note) {
   //   return note.oseg.loudness_start;
   // });
 
-  for (var i = 0; i < notesLimit; ++i) {
-    usePitchFromOtherNote(notes2[i], notes1[i]);
-    useDurationFromOtherNote(notes2[i], notes1[i],
-      (i + 1 < notesLimit) ? notes2[i + 1] : null);
-
-    this.remixed.push(notes2[i]);
+  for (var i = 0; i < this.notesLimit; ++i) {
+    // randomlyScrewUpNote(notes1[i]);
+    this.remixed.push(notes1[i]);
   }
 
   $("#info").text("Remix complete!");
@@ -176,7 +150,8 @@ pour.reportLoadProgress = function reportLoadProgress(track, percent) {
 };
 
 pour.play = function play() {
-  this.player.play(0, this.remixed);
+
+  this.player.play(0, this.remixed.slice(this.notesLimit - 10));
 };
 
 function dominantPitch(pitches) {
