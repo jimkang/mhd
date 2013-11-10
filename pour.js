@@ -20,7 +20,7 @@ var pour = {
   // track: null,
   // track2: null,
   remixed: null,
-  offlineMode: true,
+  offlineMode: false,
   context: null,
   audioGain: null,
   track: null,
@@ -66,7 +66,7 @@ pour.init = function init() {
             $("#info").text('Error loading tracks: ' + error);
           }
           else {
-            this.track = track1;
+            this.track = tracks[0];
             this.mixTracks(tracks[0].analysis);
           }
         }
