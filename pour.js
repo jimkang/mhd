@@ -30,7 +30,9 @@ var pour = {
   transitionDuration: 1000,
   colorDesignator: createColorDesignator(40, 192, 40, 255, 0.5, 1.0),
   camera: createCamera([0.2, 1.0]),
-  graph: d3.select('#graph')
+  graph: d3.select('#graph'),
+  stopped: true,
+  timeoutHandles: []
 };
 
 pour.init = function init() {
@@ -155,6 +157,7 @@ pour.mixTracks = function mixTracks(track1Analysis) {
   // });
 
   for (var i = 0; i < this.notesLimit; ++i) {
+    notes1[i].remixIndex = i;
     if (i > 15) {
       randomlyScrewUpNote(notes1[i]);
     }
@@ -168,11 +171,15 @@ pour.reportLoadProgress = function reportLoadProgress(track, percent) {
   $("#info").text(percent + "% of track loaded...");
 };
 
-pour.play = function play() {
+pour.play = function play(remixChunks) {
+  if (!remixChunks) {
+    remixChunks = this.remixed;
+  }
+  this.stopped = false;
   // this.player.play(0, this.remixed);
   var when = 0;
-  for (var i = 0; i < this.remixed.length; ++i) {
-    var q = this.remixed[i];
+  for (var i = 0; i < remixChunks.length; ++i) {
+    var q = remixChunks[i];
     var audioSource = this.context.createBufferSource();
     audioSource.buffer = q.track.buffer;
     if (q.shiftPitch) {
@@ -191,18 +198,25 @@ pour.play = function play() {
 };
 
 pour.stop = function stop() {
+  this.stopped = true;
   this.activeAudioSources.forEach(function stopSource(audioSource) {
     audioSource.noteOff(0);
   });
   this.activeAudioSources = [];
+  this.timeoutHandles.forEach(function cancelTimeout(handle) {
+    clearTimeout(handle);
+  });
+  this.timeoutHandles = [];
 };
 
 pour.updateGraphOnPlay = function updateGraphOnPlay(when, currentlyPlayingIndex) {
-  setTimeout(function playStarted() {
+  var handle = setTimeout(function playStarted() {
     this.updateGraph(currentlyPlayingIndex);
   }
   .bind(this),
   when * 1000 - this.transitionDuration - 100);
+
+  this.timeoutHandles.push(handle);
 };
 
 function dominantPitch(pitches) {
@@ -237,6 +251,9 @@ function frequencyForPitch(pitchIndex) {
 }
 
 pour.updateGraph = function updateGraph(currentlyPlayingIndex) {
+  if (this.stopped) {
+    return;
+  }
   var noteCircles = this.graph.selectAll('circle').data(
     this.remixed.slice(0, currentlyPlayingIndex + 1));
   
@@ -255,6 +272,10 @@ pour.updateGraph = function updateGraph(currentlyPlayingIndex) {
       }
       .bind(this)
     })
+    .on('click', function clickedCircle(d) {
+      this.play(this.remixed.slice(d.remixIndex, d.remixIndex + 1))
+    }
+    .bind(this))
     .transition()
     .duration(this.transitionDuration)
     .attr({
