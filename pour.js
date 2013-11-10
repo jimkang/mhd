@@ -28,7 +28,9 @@ var pour = {
   activeAudioSources: [],
   currentlyPlayingIndex: 0,
   transitionDuration: 1000,
-  colorDesignator: createColorDesignator(30, 192, 40, 255, 0.7, 1.0)
+  colorDesignator: createColorDesignator(30, 192, 40, 255, 0.7, 1.0),
+  camera: createCamera([0.2, 1.0]),
+  graph: d3.select('#graph')
 };
 
 pour.init = function init() {
@@ -69,6 +71,8 @@ pour.init = function init() {
       );
       chain.loadChain();
     }
+
+    this.camera.setUpZoomOnBoard(d3.select('#board'), this.graph);
   }
 };
 
@@ -233,18 +237,18 @@ function frequencyForPitch(pitchIndex) {
 }
 
 pour.updateGraph = function updateGraph(currentlyPlayingIndex) {
-  var graph = d3.select('#graph');
-
-  var noteCircles = graph.selectAll('circle').data(
+  var noteCircles = this.graph.selectAll('circle').data(
     this.remixed.slice(0, currentlyPlayingIndex + 1));
   
   noteCircles.enter().append('circle')
     .attr({
       cy: 0,
-      cx: function xPos(d) {
-        return Math.floor((d.start + d.duration/2) * 140);
+      cx: 0,
+      r: 0,
+      transform: function (d) {
+        return 'translate(' + Math.floor((d.start + d.duration/2) * 140) + 
+          ', 0)';
       },
-      r: 0,    
       fill: function getColor(d) {
         return this.colorDesignator.getHSLAForVisitCount(
           d.oseg.loudness_start + 60);
@@ -253,12 +257,19 @@ pour.updateGraph = function updateGraph(currentlyPlayingIndex) {
     })
     .transition()
     .duration(this.transitionDuration)
-    .attr({      
-      cy: 200,
+    .attr({
+      transform: function (d) {
+        return 'translate(' + Math.floor((d.start + d.duration/2) * 140) + 
+          ', 200)';
+      },
       r: function radius(d) {
         return Math.floor(d.duration/2 * 100);
       }
-    });
+    })
+    .call(function panToNew(allSel) {
+      this.camera.panToElement(d3.select(allSel.node()));
+    }
+    .bind(this));
 };
 
 return pour;
