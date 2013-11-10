@@ -7,7 +7,7 @@
 
 <body>
 
-<h2>And bad mistakes, I've made a few.</h2>
+<h2>And bad mistakes &mdash; I've made a few.</h2>
 
 <svg id="board" width="800" height="500" fill="#222">
     <defs>
@@ -27,23 +27,32 @@
     </g>
 </svg>
 
-<div id='info'> </div>
+<section>
+    <div class="pane">
+        <div id='info'> </div>
+        <button onClick="pour.play();">Play!</button>
+        <button onClick="pour.stop()">Stop!</button>
+    </div>
 
-<button onClick="pour.play();">Play!</button>
-<button onClick="pour.stop()">Stop!</button>
+    <div class="pane">
+      <p>
+          Could Freddy Mercury have erred here and there?
+      </p>
+      <p>
+          P.S. You can stop it, then click on circles to play individual bits.
+      </p>
+    </div>
 
-<p>
-    Could Freddy Mercury have erred here and there?
-</p>
-<p>
-    P.S. You can stop it, then click on circles to play individual bits.
-</p>
+    <div class="pane">
+    </div>
+
+</section>
 
 
 <br/><br/>
 
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="jquery.min.js"></script>
 <script src="remix.js"></script>
 <script src="data_spanishflea.js"></script>
 <script src="data_champions.js"></script>
