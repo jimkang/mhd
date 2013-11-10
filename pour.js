@@ -14,6 +14,7 @@ var pour = {
   // trackURL2: '1451_-_E.mp3',
   trackID: 'TRMPFJX12E5AB73FB6',
   trackURL: '17 We Are The Champions.mp3',
+  offlineAnalysis: championsResponse.query.results.json,
   remixer: null,
   player: null,
   // track: null,
@@ -26,7 +27,8 @@ var pour = {
   notesLimit: 0,
   activeAudioSources: [],
   currentlyPlayingIndex: 0,
-  transitionDuration: 1000
+  transitionDuration: 1000,
+  colorDesignator: createColorDesignator(30, 192, 40, 255, 0.7, 1.0)
 };
 
 pour.init = function init() {
@@ -73,7 +75,7 @@ pour.init = function init() {
 pour.initOffline = function initOffline() {
   this.remixer.remixTrack({
     status: 'complete',
-    analysis: spanishFleaResponse.query.results.json,
+    analysis: this.offlineAnalysis,
   },
   this.trackURL,
   function processedTrack1(track1, loadPercentage1) {
@@ -149,7 +151,9 @@ pour.mixTracks = function mixTracks(track1Analysis) {
   // });
 
   for (var i = 0; i < this.notesLimit; ++i) {
-    randomlyScrewUpNote(notes1[i]);
+    if (i > 15) {
+      randomlyScrewUpNote(notes1[i]);
+    }
     this.remixed.push(notes1[i]);
   }
 
@@ -194,7 +198,7 @@ pour.updateGraphOnPlay = function updateGraphOnPlay(when, currentlyPlayingIndex)
     this.updateGraph(currentlyPlayingIndex);
   }
   .bind(this),
-  when * 1000 - this.transitionDuration);
+  when * 1000 - this.transitionDuration - 100);
 };
 
 function dominantPitch(pitches) {
@@ -241,7 +245,11 @@ pour.updateGraph = function updateGraph(currentlyPlayingIndex) {
         return Math.floor((d.start + d.duration/2) * 140);
       },
       r: 0,    
-      fill: 'magenta'
+      fill: function getColor(d) {
+        return this.colorDesignator.getHSLAForVisitCount(
+          d.oseg.loudness_start + 60);
+      }
+      .bind(this)
     })
     .transition()
     .duration(this.transitionDuration)
