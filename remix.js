@@ -292,6 +292,10 @@ function createJRemixer(context, jquery, apiKey) {
                 } else if (isQuantum(q)) {
                     var audioSource = context.createBufferSource();
                     audioSource.buffer = q.track.buffer;
+                    if (q.shiftPitch) {
+                        audioSource.playbackRate.value = q.shiftPitch;
+                    }
+
                     audioSource.connect(audioGain);
                     q.audioSource = audioSource;
                     currentlyQueued.push(audioSource);

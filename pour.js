@@ -14,13 +14,8 @@ var pour = {
   player: null,
   // track: null,
   // track2: null,
-  // remixed: null,
-  offlineMode: true,
-  audiolet: null,
-  synth: null,
-  freqPattern: [],
-  durationPattern: [],
-  scale: null
+  remixed: null,
+  offlineMode: true
 };
 
 pour.init = function init() {
@@ -30,13 +25,6 @@ pour.init = function init() {
   } 
   else {
     var context = new webkitAudioContext();
-    this.audiolet = new Audiolet();
-    this.synth = new Synth(this.audiolet);
-    this.synth.connect(this.audiolet.output);
-
-    // var tuning = new EqualTemperamentTuning();
-    this.scale = new Scale([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
-
     this.remixer = createJRemixer(context, $, this.apiKey);
     this.player = this.remixer.getPlayer();
     $("#info").text("Loading analysis data...");
@@ -95,10 +83,9 @@ pour.initOffline = function initOffline() {
 };
 
 pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
+  this.remixed = [];
   // Extract the first and third beats of track 1 with the second and fourth 
   // beats of track 2.
-  this.freqPattern = [];
-  this.durationPattern = [];
 
   var meter = parseInt(track1Analysis.track.time_signature, 10);
   if (meter === 1) {
@@ -107,19 +94,21 @@ pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
     meter = 4;
   }
 
-  var notes1 = track1Analysis.fsegments;
-  var notes2 = track2Analysis.fsegments;
+  var notes1 = track1Analysis.tatums;
+  var notes2 = track2Analysis.tatums;
   var notesLimit = Math.min(notes1.length, notes2.length);
 
   for (var i = 0; i < notesLimit; ++i) {
     // TODO: Using track2's buffer with track1's rhythm stuff.
-    var noteIndex = dominantNote(notes1[i].pitches);
-    var dominantFreq = this.scale.getFrequency(noteIndex, 440, 2);
-    this.freqPattern.push(dominantFreq);
-    this.durationPattern.push(notes1[i].duration);
-    // tatums2[i].start = .start;
+    // var dominantPitch1 = dominantPitch(notes1[i].pitches);
+    // var dominantPitch2 = dominantPitch(notes2[i].pitches);
+
+    // var dominantFreq = this.scale.getFrequency(noteIndex, 440, 2);
+    notes2[i].start = notes1[i].start;
+    notes2[i].duration = notes1[i].duration;
     // tatums2[i].duration = tatums1[i].duration;
-    // this.remixed.push(confidentTatums2[i]);
+    notes2[i].shiftPitch = (Math.floor(Math.random() * 2) % 2 === 0) ? 2.0 : 0.5;
+    this.remixed.push(notes2[i]);
   }
 
   $("#info").text("Remix complete!");
@@ -130,27 +119,11 @@ pour.reportLoadProgress = function reportLoadProgress(track, percent) {
 };
 
 pour.play = function play() {
-  // this.player.play(0, this.remixed);
-  this.audiolet.scheduler.play([new PSequence(this.freqPattern)], 
-    new PSequence(this.durationPattern),
-    this.playEvent.bind(this));
+  this.player.play(0, this.remixed);
 };
 
-pour.playEvent = function playEvent(frequency) {
-  // Set the gate
-  // this.synth.trigger.trigger.setValue(1);
-  // Calculate the frequency from the scale
-  // var frequency = this.scale.getFrequency(degree,
-  //                                         this.c2Frequency,
-  //                                         3);
-  // Set the frequency
-  // this.synth.saw.frequency.setValue(frequency);
-  var synth = new Synth(this.audiolet, frequency);
-  synth.connect(this.audiolet.output);
-};
-
-function dominantNote(pitches) {
-  var dominantNoteValueAndPosition = pitches.reduce(
+function dominantPitch(pitches) {
+  var dominantPitchValueAndPosition = pitches.reduce(
     function biggerValueAndPosition(prevValAndPos, value, pos) {
       if (typeof prevValAndPos === 'number') {
         prevValAndPos = {
@@ -170,7 +143,7 @@ function dominantNote(pitches) {
       }
     }
   );
-  return dominantNoteValueAndPosition.pos;
+  return dominantPitchValueAndPosition.pos;
 };
 
 return pour;
