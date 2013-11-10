@@ -127,6 +127,14 @@ pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
     }
   }
 
+  function lowAndSlow(note, nextNote) {
+    note.shiftPitch = 0.5;
+    note.duration = 0.2;
+    if (nextNote) {
+      nextNote.start -= note.duration * 0.8;
+    }
+  }
+
   for (var i = 0; i < notesLimit; ++i) {
     // var dominantPitch1 = dominantPitch(notes1[i].oseg.pitches);
     // var dominantPitch2 = dominantPitch(notes2[i].oseg.pitches);
@@ -135,12 +143,8 @@ pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
     //   notes2[i].shiftPitch = Math.pow(2, halfStepsDiff/12);
     // }
     // randomlyScrewUpNote(notes2[i]);
-    notes2[i].shiftPitch = 0.5;
-    notes2[i].duration = 0.2;
-    if (i + 1 < notesLimit) {
-      notes2[i + 1].start -= notes2[i].duration * 0.8;
-    }
-
+    lowAndSlow(notes2[i], (i + 1 < notesLimit) ? notes2[i + 1] : null);
+    
     // notes2[i].start = notes1[i].start;
     // notes2[i].duration = notes1[i].duration;
     this.remixed.push(notes2[i]);
