@@ -19,7 +19,8 @@ var pour = {
   // track: null,
   // track2: null,
   remixed: null,
-  offlineMode: true
+  offlineMode: true,
+  context: null
 };
 
 pour.init = function init() {
@@ -28,8 +29,8 @@ pour.init = function init() {
       " support it. Try the latest version of Chrome");
   } 
   else {
-    var context = new webkitAudioContext();
-    this.remixer = createJRemixer(context, $, this.apiKey);
+    this.context = new webkitAudioContext();
+    this.remixer = createJRemixer(this.context, $, this.apiKey);
     this.player = this.remixer.getPlayer();
     $("#info").text("Loading analysis data...");
 
@@ -155,14 +156,14 @@ pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
       nextNote.start += diff;
     }
   }
+  // notes2 = _.sortBy(notes2, function getLoudness(note) {
+  //   return note.oseg.loudness_start;
+  // });
 
-  notes2 = _.sortBy(notes2, function getLoudness(note) {
-    return note.oseg.loudness_start;
-  });
   for (var i = 0; i < notesLimit; ++i) {
-    // usePitchFromOtherNote(notes2[i], notes1[i]);
-    // useDurationFromOtherNote(notes2[i], notes1[i],
-    //   (i + 1 < notesLimit) ? notes2[i + 1] : null);
+    usePitchFromOtherNote(notes2[i], notes1[i]);
+    useDurationFromOtherNote(notes2[i], notes1[i],
+      (i + 1 < notesLimit) ? notes2[i + 1] : null);
 
     this.remixed.push(notes2[i]);
   }
