@@ -32,7 +32,8 @@ var pour = {
   camera: createCamera([0.2, 1.0]),
   graph: d3.select('#graph'),
   stopped: true,
-  timeoutHandles: []
+  timeoutHandles: [],
+  lastPlayedIndex: 0
 };
 
 pour.init = function init() {
@@ -164,7 +165,7 @@ pour.mixTracks = function mixTracks(track1Analysis) {
     this.remixed.push(notes1[i]);
   }
 
-  $("#info").text("Remix complete!");
+  $("#info").text("Ready to play.");
 };
 
 pour.reportLoadProgress = function reportLoadProgress(track, percent) {
@@ -172,13 +173,15 @@ pour.reportLoadProgress = function reportLoadProgress(track, percent) {
 };
 
 pour.play = function play(remixChunks) {
+  var start = 0;
   if (!remixChunks) {
     remixChunks = this.remixed;
+    start = this.lastPlayedIndex;
   }
   this.stopped = false;
   // this.player.play(0, this.remixed);
   var when = 0;
-  for (var i = 0; i < remixChunks.length; ++i) {
+  for (var i = start; i < remixChunks.length; ++i) {
     var q = remixChunks[i];
     var audioSource = this.context.createBufferSource();
     audioSource.buffer = q.track.buffer;
@@ -212,9 +215,10 @@ pour.stop = function stop() {
 pour.updateGraphOnPlay = function updateGraphOnPlay(when, currentlyPlayingIndex) {
   var handle = setTimeout(function playStarted() {
     this.updateGraph(currentlyPlayingIndex);
+    this.lastPlayedIndex = currentlyPlayingIndex;
   }
   .bind(this),
-  when * 1000 - this.transitionDuration - 100);
+  when * 1000 - this.transitionDuration - 500);
 
   this.timeoutHandles.push(handle);
 };
@@ -274,6 +278,7 @@ pour.updateGraph = function updateGraph(currentlyPlayingIndex) {
     })
     .on('click', function clickedCircle(d) {
       this.play(this.remixed.slice(d.remixIndex, d.remixIndex + 1))
+      this.lastPlayedIndex = d.remixIndex;      
     }
     .bind(this))
     .transition()
