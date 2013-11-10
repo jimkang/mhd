@@ -2,10 +2,10 @@ function createPour() {
 
 var pour = {
   apiKey: 'OJLZYPUNBP3M0CMNY',
-  // trackID: 'TRLXIRU12E5AD67A71',
-  // trackURL: 'Spanish Flea.mp3',  
-  trackID: 'TRIMDDN12E5AB73EF1',
-  trackURL: '16 We Will Rock You.mp3',  
+  trackID: 'TRLXIRU12E5AD67A71',
+  trackURL: 'Spanish Flea.mp3',  
+  // trackID: 'TRIMDDN12E5AB73EF1',
+  // trackURL: '16 We Will Rock You.mp3',  
 
   
   // trackID: 'TRCYWPQ139279B3308',
@@ -63,7 +63,7 @@ pour.init = function init() {
 pour.initOffline = function initOffline() {
   this.remixer.remixTrack({
     status: 'complete',
-    analysis: willwillrockyouResponse.query.results.json,
+    analysis: spanishFleaResponse.query.results.json,
   },
   this.trackURL,
   function processedTrack1(track1, loadPercentage1) {
@@ -79,7 +79,7 @@ pour.mixTracks = function mixTracks(track1Analysis) {
 
   function randomlyScrewUpNote(note) {
     if (!shiftedLastNote && (Math.floor(Math.random() * 4) % 4) === 0) {
-      note.shiftPitch = Math.pow(2, 1.0/12);
+      note.shiftPitch = Math.pow(2, -1.0/12);
       shiftedLastNote = true;
     }
     else {
@@ -138,7 +138,7 @@ pour.mixTracks = function mixTracks(track1Analysis) {
   // });
 
   for (var i = 0; i < this.notesLimit; ++i) {
-    // randomlyScrewUpNote(notes1[i]);
+    randomlyScrewUpNote(notes1[i]);
     this.remixed.push(notes1[i]);
   }
 
@@ -150,8 +150,7 @@ pour.reportLoadProgress = function reportLoadProgress(track, percent) {
 };
 
 pour.play = function play() {
-
-  this.player.play(0, this.remixed.slice(this.notesLimit - 10));
+  this.player.play(0, this.remixed);
 };
 
 function dominantPitch(pitches) {
