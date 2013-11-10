@@ -66,7 +66,7 @@ pour.init = function init() {
 pour.initOffline = function initOffline() {
   this.remixer.remixTrack({
     status: 'complete',
-    analysis: spanishFleaResponse.query.results.json,
+    analysis: willwillrockyouResponse.query.results.json,
   },
   this.trackURL,
   function processedTrack1(track1, loadPercentage1) {
