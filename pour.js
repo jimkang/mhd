@@ -2,8 +2,12 @@ function createPour() {
 
 var pour = {
   apiKey: 'OJLZYPUNBP3M0CMNY',
-  trackID: 'TRLXIRU12E5AD67A71',
-  trackURL: 'Spanish Flea.mp3',  
+  // trackID: 'TRLXIRU12E5AD67A71',
+  // trackURL: 'Spanish Flea.mp3',  
+  trackID: 'TRIMDDN12E5AB73EF1',
+  trackURL: '16 We Will Rock You.mp3',  
+
+  
   // trackID: 'TRCYWPQ139279B3308',
   // trackURL: '1451_-_D.mp3',
   // trackID2: 'TRBIBEW13936EB37C9',
@@ -135,18 +139,28 @@ pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
     }
   }
 
+  function usePitchFromOtherNote(note, otherNote) {
+    var dominantPitch1 = dominantPitch(note.oseg.pitches);
+    var dominantPitch2 = dominantPitch(otherNote.oseg.pitches);
+    var halfStepsDiff = dominantPitch1 - dominantPitch2;
+    if (halfStepsDiff !== 0) {
+      note.shiftPitch = Math.pow(2, halfStepsDiff/12);
+    }
+  }
+
+  function useDurationFromOtherNote(note, otherNote, nextNote) {
+    note.duration = otherNote.duration;
+    var diff = otherNote.duration - note.duration;
+    if (nextNote) {
+      nextNote.start += diff;
+    }
+  }
+
   for (var i = 0; i < notesLimit; ++i) {
-    // var dominantPitch1 = dominantPitch(notes1[i].oseg.pitches);
-    // var dominantPitch2 = dominantPitch(notes2[i].oseg.pitches);
-    // var halfStepsDiff = dominantPitch1 - dominantPitch2;
-    // if (halfStepsDiff !== 0) {
-    //   notes2[i].shiftPitch = Math.pow(2, halfStepsDiff/12);
-    // }
-    // randomlyScrewUpNote(notes2[i]);
-    lowAndSlow(notes2[i], (i + 1 < notesLimit) ? notes2[i + 1] : null);
-    
-    // notes2[i].start = notes1[i].start;
-    // notes2[i].duration = notes1[i].duration;
+    usePitchFromOtherNote(notes2[i], notes1[i]);
+    useDurationFromOtherNote(notes2[i], notes1[i],
+      (i + 1 < notesLimit) ? notes2[i + 1] : null);
+
     this.remixed.push(notes2[i]);
   }
 
