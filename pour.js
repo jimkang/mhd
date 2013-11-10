@@ -96,21 +96,47 @@ pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
 
   var notes1 = track1Analysis.tatums;
   var notes2 = track2Analysis.tatums;
-  var notesLimit = Math.min(notes1.length, notes2.length);
+  // var notesLimit = Math.min(notes1.length, notes2.length);
+  var notesLimit = notes2.length;
+  var shiftedLastNote = false;
+
+  function randomlyScrewUpNote(note) {
+    if (!shiftedLastNote && (Math.floor(Math.random() * 4) % 4) === 0) {
+      note.shiftPitch = Math.pow(2, 1.0/12);
+      shiftedLastNote = true;
+    }
+    else {
+      shiftedLastNote = false;
+    }
+  }
+
+  var notesSinceLastShift = 0;
+
+  function screwUpLoudNote(note, track) {
+    var competenceFactor = 4 - notesSinceLastShift;
+    if (competenceFactor < 1) {
+      competenceFactor = 1;
+    }
+    if (note.oseg.loudness_max > track.loudness && 
+      (Math.floor(Math.random() * competenceFactor % competenceFactor) === 0)) {
+      note.shiftPitch = Math.pow(2, 1.0/12);
+      notesSinceLastShift = 0;
+    }
+    else {
+      ++notesSinceLastShift;
+    }
+  }
 
   for (var i = 0; i < notesLimit; ++i) {
-    // TODO: Using track2's buffer with track1's rhythm stuff.
-    var dominantPitch1 = dominantPitch(notes1[i].oseg.pitches);
-    var dominantPitch2 = dominantPitch(notes2[i].oseg.pitches);
-    var halfStepsDiff = dominantPitch1 - dominantPitch2;
-    if (halfStepsDiff !== 0) {
-      notes2[i].shiftPitch = Math.pow(2, halfStepsDiff/12);
-    }
-
-    // var dominantFreq = this.scale.getFrequency(noteIndex, 440, 2);
-    notes2[i].start = notes1[i].start;
-    notes2[i].duration = notes1[i].duration;
-    // tatums2[i].duration = tatums1[i].duration;
+    // var dominantPitch1 = dominantPitch(notes1[i].oseg.pitches);
+    // var dominantPitch2 = dominantPitch(notes2[i].oseg.pitches);
+    // var halfStepsDiff = dominantPitch1 - dominantPitch2;
+    // if (halfStepsDiff !== 0) {
+    //   notes2[i].shiftPitch = Math.pow(2, halfStepsDiff/12);
+    // }
+    randomlyScrewUpNote(notes2[i]);
+    // notes2[i].start = notes1[i].start;
+    // notes2[i].duration = notes1[i].duration;
     this.remixed.push(notes2[i]);
   }
 
