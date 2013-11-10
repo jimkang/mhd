@@ -134,7 +134,13 @@ pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
     // if (halfStepsDiff !== 0) {
     //   notes2[i].shiftPitch = Math.pow(2, halfStepsDiff/12);
     // }
-    randomlyScrewUpNote(notes2[i]);
+    // randomlyScrewUpNote(notes2[i]);
+    notes2[i].shiftPitch = 0.5;
+    notes2[i].duration = 0.2;
+    if (i + 1 < notesLimit) {
+      notes2[i + 1].start -= notes2[i].duration * 0.8;
+    }
+
     // notes2[i].start = notes1[i].start;
     // notes2[i].duration = notes1[i].duration;
     this.remixed.push(notes2[i]);
