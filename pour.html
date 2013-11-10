@@ -2,10 +2,29 @@
 <html lang="en">
 <head>
 <meta charset=utf-8>
+<link rel="stylesheet" type="text/css" href="spacegame.css">
 </head>
 
 <body>
-Welcome to Two.html
+
+<svg id="board" width="800" height="500" fill="#222">
+    <defs>
+      <radialGradient id="backdropGradient" gradientUnits="userSpaceOnUse"
+        cx="320" cy="320" r="360" fx="240" fy="240">
+        <stop offset="0%" stop-color="#102" />
+        <stop offset="36%" stop-color="rgb(12, 8, 48)" />
+        <stop offset="100%" stop-color="#102" />
+      </radialGradient>
+    </defs>
+
+    <g id="backdrop">
+      <rect x="0" y="0" width="100%" height="100%" 
+      fill="url(#backdropGradient)" />        
+    </g>
+    <g id="graph">
+    </g>
+</svg>
+
 <div id='info'> </div>
 
 <button onClick="pour.play();">Play!</button>
@@ -18,6 +37,7 @@ Welcome to Two.html
 <script src="data_wewillrockyou.js"></script>
 <script src="underscore.js"></script>
 <script src="remixloadchain.js"></script>
+<script src="d3.v3.min.js"></script>
 <script src="pour.js"></script>
 
 </body>

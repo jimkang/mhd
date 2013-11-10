@@ -1,0 +1,53 @@
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 200;
+  font-size: 18px;
+  margin: 10px 0;
+  padding: 0;
+	color: #fff;
+	background-color: #102;
+}
+
+a, a:visited, a:active {
+  color: #332;
+	font-size: 1.2em;
+}
+
+#boardContainer {
+	overflow: scroll;
+	height: 90%;
+	border: 2px rgba(255, 255, 255, 0.4) dashed;
+}
+
+#boardSVG {
+	overflow: hidden;
+}
+
+.overlayPanel {
+	position: absolute;
+	z-index: 1;
+	color: rgba(255, 255, 255, 0.7);
+	background-color: rgba(0, 0, 0, 0.7);
+}
+
+#guysPanel {
+	right: 1em;
+	top: 1em;
+	width: 240px;
+}
+
+#logPanel {
+	left: 1em;
+	top: 1em;
+	width: 240px;
+}
+
+#gameAdminOverlay {
+	position: absolute;
+	/*top: 380px;*/
+	bottom: 1em;
+	left: 380px;
+	z-index: 10;
+	border: 2px white solid;
+	padding: 1em 1em 1em 1em;
+}

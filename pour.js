@@ -2,8 +2,8 @@ function createPour() {
 
 var pour = {
   apiKey: 'OJLZYPUNBP3M0CMNY',
-  trackID: 'TRLXIRU12E5AD67A71',
-  trackURL: 'Spanish Flea.mp3',  
+  // trackID: 'TRLXIRU12E5AD67A71',
+  // trackURL: 'Spanish Flea.mp3',  
   // trackID: 'TRIMDDN12E5AB73EF1',
   // trackURL: '16 We Will Rock You.mp3',  
 
@@ -12,8 +12,8 @@ var pour = {
   // trackURL: '1451_-_D.mp3',
   // trackID2: 'TRBIBEW13936EB37C9',
   // trackURL2: '1451_-_E.mp3',
-  // trackID2: 'TRMPFJX12E5AB73FB6',
-  // trackURL2: '17 We Are The Champions.mp3',
+  trackID: 'TRMPFJX12E5AB73FB6',
+  trackURL: '17 We Are The Champions.mp3',
   remixer: null,
   player: null,
   // track: null,
@@ -24,7 +24,9 @@ var pour = {
   audioGain: null,
   track: null,
   notesLimit: 0,
-  activeAudioSources: []
+  activeAudioSources: [],
+  currentlyPlayingIndex: 0,
+  transitionDuration: 1000
 };
 
 pour.init = function init() {
@@ -174,6 +176,7 @@ pour.play = function play() {
     // currentlyQueued.push(audioSource);
     audioSource.noteGrainOn(when, q.start, q.duration);
     this.activeAudioSources.push(audioSource);
+    this.updateGraphOnPlay(when, i);
 
     when += parseFloat(q.duration);
   }
@@ -184,6 +187,14 @@ pour.stop = function stop() {
     audioSource.noteOff(0);
   });
   this.activeAudioSources = [];
+};
+
+pour.updateGraphOnPlay = function updateGraphOnPlay(when, currentlyPlayingIndex) {
+  setTimeout(function playStarted() {
+    this.updateGraph(currentlyPlayingIndex);
+  }
+  .bind(this),
+  when * 1000 - this.transitionDuration);
 };
 
 function dominantPitch(pitches) {
@@ -216,6 +227,31 @@ function frequencyForPitch(pitchIndex) {
   var halfStepsDiff = pitchIndex - 9;
   return 440 * Math.pow(2, halfStepsDiff/12);
 }
+
+pour.updateGraph = function updateGraph(currentlyPlayingIndex) {
+  var graph = d3.select('#graph');
+
+  var noteCircles = graph.selectAll('circle').data(
+    this.remixed.slice(0, currentlyPlayingIndex + 1));
+  
+  noteCircles.enter().append('circle')
+    .attr({
+      cy: 0,
+      cx: function xPos(d) {
+        return Math.floor((d.start + d.duration/2) * 140);
+      },
+      r: 0,    
+      fill: 'magenta'
+    })
+    .transition()
+    .duration(this.transitionDuration)
+    .attr({      
+      cy: 200,
+      r: function radius(d) {
+        return Math.floor(d.duration/2 * 100);
+      }
+    });
+};
 
 return pour;
 }
