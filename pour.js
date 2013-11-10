@@ -28,7 +28,7 @@ var pour = {
   activeAudioSources: [],
   currentlyPlayingIndex: 0,
   transitionDuration: 1000,
-  colorDesignator: createColorDesignator(30, 192, 40, 255, 0.7, 1.0),
+  colorDesignator: createColorDesignator(30, 192, 40, 255, 0.5, 1.0),
   camera: createCamera([0.2, 1.0]),
   graph: d3.select('#graph')
 };
