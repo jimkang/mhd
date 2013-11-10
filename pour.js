@@ -156,10 +156,13 @@ pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
     }
   }
 
+  notes2 = _.sortBy(notes2, function getLoudness(note) {
+    return note.oseg.loudness_start;
+  });
   for (var i = 0; i < notesLimit; ++i) {
-    usePitchFromOtherNote(notes2[i], notes1[i]);
-    useDurationFromOtherNote(notes2[i], notes1[i],
-      (i + 1 < notesLimit) ? notes2[i + 1] : null);
+    // usePitchFromOtherNote(notes2[i], notes1[i]);
+    // useDurationFromOtherNote(notes2[i], notes1[i],
+    //   (i + 1 < notesLimit) ? notes2[i + 1] : null);
 
     this.remixed.push(notes2[i]);
   }
