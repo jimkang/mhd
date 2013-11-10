@@ -14,8 +14,13 @@ var pour = {
   player: null,
   // track: null,
   // track2: null,
-  remixed: null,
-  offlineMode: true
+  // remixed: null,
+  offlineMode: true,
+  audiolet: null,
+  synth: null,
+  freqPattern: [],
+  durationPattern: [],
+  scale: null
 };
 
 pour.init = function init() {
@@ -25,6 +30,12 @@ pour.init = function init() {
   } 
   else {
     var context = new webkitAudioContext();
+    this.audiolet = new Audiolet();
+    this.synth = new Synth(this.audiolet);
+    this.synth.connect(this.audiolet.output);
+
+    // var tuning = new EqualTemperamentTuning();
+    this.scale = new Scale([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
 
     this.remixer = createJRemixer(context, $, this.apiKey);
     this.player = this.remixer.getPlayer();
@@ -86,36 +97,30 @@ pour.initOffline = function initOffline() {
 pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
   // Extract the first and third beats of track 1 with the second and fourth 
   // beats of track 2.
-  this.remixed = [];
+  this.freqPattern = [];
+  this.durationPattern = [];
+
   var meter = parseInt(track1Analysis.track.time_signature, 10);
   if (meter === 1) {
     // If it gives us a meter of 1, I'm guessing it couldn't figure it out.
     // Try 4.
     meter = 4;
   }
-  var numberOfBeats = Math.min(track1Analysis.beats.length, 
-    track2Analysis.beats.length);
-  var numberOfFSegs = Math.min(
-      track1Analysis.fsegments.length, 
-      track2Analysis.fsegments.length);
-  
-  for (var i=0; i < numberOfFSegs; i++) {
-    if (i % meter === 0 || i % meter === 2) {
-      this.remixed.push(track1Analysis.fsegments[i]);
-    } 
-    else if (i % meter === 1 || i % meter === 3) {
-      this.remixed.push(track2Analysis.fsegments[i]);
-    }
-  }
 
-  // for (var i=0; i < numberOfBeats; i++) {
-  //   if (i % meter === 0 || i % meter === 2) {
-  //     this.remixed.push(track1.analysis.beats[i]);
-  //   } 
-  //   else if (i % meter === 1 || i % meter === 3) {
-  //     this.remixed.push(track2Analysis.beats[i]);
-  //   }
-  // }
+  var notes1 = track1Analysis.fsegments;
+  var notes2 = track2Analysis.fsegments;
+  var notesLimit = Math.min(notes1.length, notes2.length);
+
+  for (var i = 0; i < notesLimit; ++i) {
+    // TODO: Using track2's buffer with track1's rhythm stuff.
+    var noteIndex = dominantNote(notes1[i].pitches);
+    var dominantFreq = this.scale.getFrequency(noteIndex, 440, 2);
+    this.freqPattern.push(dominantFreq);
+    this.durationPattern.push(notes1[i].duration);
+    // tatums2[i].start = .start;
+    // tatums2[i].duration = tatums1[i].duration;
+    // this.remixed.push(confidentTatums2[i]);
+  }
 
   $("#info").text("Remix complete!");
 };
@@ -125,7 +130,47 @@ pour.reportLoadProgress = function reportLoadProgress(track, percent) {
 };
 
 pour.play = function play() {
-  this.player.play(0, this.remixed);
+  // this.player.play(0, this.remixed);
+  this.audiolet.scheduler.play([new PSequence(this.freqPattern)], 
+    new PSequence(this.durationPattern),
+    this.playEvent.bind(this));
+};
+
+pour.playEvent = function playEvent(frequency) {
+  // Set the gate
+  // this.synth.trigger.trigger.setValue(1);
+  // Calculate the frequency from the scale
+  // var frequency = this.scale.getFrequency(degree,
+  //                                         this.c2Frequency,
+  //                                         3);
+  // Set the frequency
+  // this.synth.saw.frequency.setValue(frequency);
+  var synth = new Synth(this.audiolet, frequency);
+  synth.connect(this.audiolet.output);
+};
+
+function dominantNote(pitches) {
+  var dominantNoteValueAndPosition = pitches.reduce(
+    function biggerValueAndPosition(prevValAndPos, value, pos) {
+      if (typeof prevValAndPos === 'number') {
+        prevValAndPos = {
+          value: prevValAndPos,
+          pos: 0
+        };
+      }
+  
+      if (value > prevValAndPos.value) {
+        return {
+          value: value,
+          pos: pos
+        };
+      }
+      else {
+        return prevValAndPos;
+      }
+    }
+  );
+  return dominantNoteValueAndPosition.pos;
 };
 
 return pour;
