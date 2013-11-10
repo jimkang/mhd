@@ -21,7 +21,10 @@ var pour = {
   remixed: null,
   offlineMode: true,
   context: null,
-  notesLimit: 0
+  audioGain: null,
+  track: null,
+  notesLimit: 0,
+  activeAudioSources: []
 };
 
 pour.init = function init() {
@@ -31,6 +34,10 @@ pour.init = function init() {
   } 
   else {
     this.context = new webkitAudioContext();
+    this.audioGain = this.context.createGainNode();
+    this.audioGain.gain.value = 1;
+    this.audioGain.connect(this.context.destination);
+
     this.remixer = createJRemixer(this.context, $, this.apiKey);
     this.player = this.remixer.getPlayer();
     $("#info").text("Loading analysis data...");
@@ -50,6 +57,7 @@ pour.init = function init() {
             $("#info").text('Error loading tracks: ' + error);
           }
           else {
+            this.track = track1;
             this.mixTracks(tracks[0].analysis);
           }
         }
@@ -68,6 +76,7 @@ pour.initOffline = function initOffline() {
   this.trackURL,
   function processedTrack1(track1, loadPercentage1) {
     if (loadPercentage1 === 100 && track1.status === 'ok') {
+      this.track = track1;
       this.mixTracks(track1.analysis);
     }
   }
@@ -150,7 +159,31 @@ pour.reportLoadProgress = function reportLoadProgress(track, percent) {
 };
 
 pour.play = function play() {
-  this.player.play(0, this.remixed);
+  // this.player.play(0, this.remixed);
+  var when = 0;
+  for (var i = 0; i < this.remixed.length; ++i) {
+    var q = this.remixed[i];
+    var audioSource = this.context.createBufferSource();
+    audioSource.buffer = q.track.buffer;
+    if (q.shiftPitch) {
+        audioSource.playbackRate.value = q.shiftPitch;
+    }
+
+    audioSource.connect(this.audioGain);
+    q.audioSource = audioSource;
+    // currentlyQueued.push(audioSource);
+    audioSource.noteGrainOn(when, q.start, q.duration);
+    this.activeAudioSources.push(audioSource);
+
+    when += parseFloat(q.duration);
+  }
+};
+
+pour.stop = function stop() {
+  this.activeAudioSources.forEach(function stopSource(audioSource) {
+    audioSource.noteOff(0);
+  });
+  this.activeAudioSources = [];
 };
 
 function dominantPitch(pitches) {
