@@ -100,14 +100,17 @@ pour.mixTracks = function mixTracks(track1Analysis, track2Analysis) {
 
   for (var i = 0; i < notesLimit; ++i) {
     // TODO: Using track2's buffer with track1's rhythm stuff.
-    // var dominantPitch1 = dominantPitch(notes1[i].pitches);
-    // var dominantPitch2 = dominantPitch(notes2[i].pitches);
+    var dominantPitch1 = dominantPitch(notes1[i].oseg.pitches);
+    var dominantPitch2 = dominantPitch(notes2[i].oseg.pitches);
+    var halfStepsDiff = dominantPitch1 - dominantPitch2;
+    if (halfStepsDiff !== 0) {
+      notes2[i].shiftPitch = Math.pow(2, halfStepsDiff/12);
+    }
 
     // var dominantFreq = this.scale.getFrequency(noteIndex, 440, 2);
     notes2[i].start = notes1[i].start;
     notes2[i].duration = notes1[i].duration;
     // tatums2[i].duration = tatums1[i].duration;
-    notes2[i].shiftPitch = (Math.floor(Math.random() * 2) % 2 === 0) ? 2.0 : 0.5;
     this.remixed.push(notes2[i]);
   }
 
@@ -145,6 +148,13 @@ function dominantPitch(pitches) {
   );
   return dominantPitchValueAndPosition.pos;
 };
+
+// Has no idea what octave anything's at.
+function frequencyForPitch(pitchIndex) {
+  // A is 9.
+  var halfStepsDiff = pitchIndex - 9;
+  return 440 * Math.pow(2, halfStepsDiff/12);
+}
 
 return pour;
 }

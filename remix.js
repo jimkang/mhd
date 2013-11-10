@@ -294,6 +294,7 @@ function createJRemixer(context, jquery, apiKey) {
                     audioSource.buffer = q.track.buffer;
                     if (q.shiftPitch) {
                         audioSource.playbackRate.value = q.shiftPitch;
+                        q.duration /= q.shiftPitch;
                     }
 
                     audioSource.connect(audioGain);
