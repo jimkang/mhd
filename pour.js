@@ -12,8 +12,17 @@ var pour = {
   // trackURL: '1451_-_D.mp3',
   // trackID2: 'TRBIBEW13936EB37C9',
   // trackURL2: '1451_-_E.mp3',
-  trackID: 'TRMPFJX12E5AB73FB6',
-  trackURL: '17 We Are The Champions.mp3',
+  trackDict: {
+    'TRMPFJX12E5AB73FB6': {
+      trackID: 'TRMPFJX12E5AB73FB6',
+      trackURL: '17 We Are The Champions.mp3'
+    },
+    'TRLXIRU12E5AD67A71': {
+      trackID: 'TRLXIRU12E5AD67A71',
+      trackURL: 'Spanish Flea.mp3'
+    }
+  },
+  selectedTrackId: 'TRMPFJX12E5AB73FB6',
   offlineAnalysis: championsResponse.query.results.json,
   remixer: null,
   player: null,
@@ -57,8 +66,8 @@ pour.init = function init() {
     else {
       var chain = createRemixLoadChain(this.remixer, [
           {
-            trackId: this.trackID,
-            trackURL: this.trackURL
+            trackId: this.selectedTrackId,
+            trackURL: this.trackDict[this.selectedTrackId].trackURL
           }
         ],
         this.reportLoadProgress, function tracksLoaded(error, tracks) {
@@ -76,6 +85,11 @@ pour.init = function init() {
     }
 
     this.camera.setUpZoomOnBoard(d3.select('#board'), this.graph);
+
+    d3.select('#songs').on('change', function selectChanged() {
+      pour.selectedTrackId = this.value;
+      pour.init();
+    });
   }
 };
 
