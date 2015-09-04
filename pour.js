@@ -252,7 +252,10 @@ pour.updateGraph = function updateGraph(currentlyPlayingIndex) {
   var noteCircles = this.graph.selectAll('circle').data(
     this.remixed.slice(0, currentlyPlayingIndex + 1));
   
-  noteCircles.enter().append('circle')
+  var entering = noteCircles.enter();
+  var entered = entering.append('circle');
+
+  entered
     .attr({
       cy: 0,
       cx: 0,
@@ -266,7 +269,9 @@ pour.updateGraph = function updateGraph(currentlyPlayingIndex) {
           d.oseg.loudness_start + 60);
       }
       .bind(this)
-    })
+    });
+
+  entered
     .on('click', function clickedCircle(d) {
       this.play(this.remixed.slice(d.remixIndex, d.remixIndex + 1))
       this.lastPlayedIndex = d.remixIndex;      
@@ -282,11 +287,11 @@ pour.updateGraph = function updateGraph(currentlyPlayingIndex) {
       r: function radius(d) {
         return Math.floor(d.duration/2 * 100);
       }
-    })
-    .call(function panToNew(allSel) {
-      this.camera.panToElement(d3.select(allSel.node()));
-    }
-    .bind(this));
+    });
+
+  if (!entered.empty()) {
+    this.camera.panToElement(entered);
+  }
 };
 
 return pour;
