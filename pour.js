@@ -12,24 +12,14 @@ var pour = {
   // trackURL: '1451_-_D.mp3',
   // trackID2: 'TRBIBEW13936EB37C9',
   // trackURL2: '1451_-_E.mp3',
-  trackDict: {
-    'TRMPFJX12E5AB73FB6': {
-      trackID: 'TRMPFJX12E5AB73FB6',
-      trackURL: '17 We Are The Champions.mp3'
-    },
-    'TRLXIRU12E5AD67A71': {
-      trackID: 'TRLXIRU12E5AD67A71',
-      trackURL: 'Spanish Flea.mp3'
-    }
-  },
-  selectedTrackId: 'TRMPFJX12E5AB73FB6',
+  trackID: 'TRMPFJX12E5AB73FB6',
+  trackURL: '17 We Are The Champions.mp3',
   offlineAnalysis: championsResponse.query.results.json,
   remixer: null,
   player: null,
   // track: null,
   // track2: null,
   remixed: null,
-  offlineMode: false,
   context: null,
   audioGain: null,
   track: null,
@@ -45,7 +35,7 @@ var pour = {
   lastPlayedIndex: 0
 };
 
-pour.init = function init() {
+pour.init = function init(done) {
   if (window.AudioContext === undefined) {
     throw new Error("Sorry, this app needs advanced web audio. Your browser doesn't" +
       " support it. Try the latest version of Chrome");
@@ -60,40 +50,26 @@ pour.init = function init() {
     this.player = this.remixer.getPlayer();
     $("#info").text("Loading analysis data...");
 
-    if (this.offlineMode) {
-      this.initOffline();
-    }
-    else {
-      var chain = createRemixLoadChain(this.remixer, [
-          {
-            trackId: this.selectedTrackId,
-            trackURL: this.trackDict[this.selectedTrackId].trackURL
-          }
-        ],
-        this.reportLoadProgress, function tracksLoaded(error, tracks) {
-          if (error) {
-            $("#info").text('Error loading tracks: ' + error);
-          }
-          else {
-            this.track = tracks[0];
-            this.mixTracks(tracks[0].analysis);
-          }
-        }
-        .bind(this)
-      );
-      chain.loadChain();
-    }
+    this.initOffline(done);
 
     this.camera.setUpZoomOnBoard(d3.select('#board'), this.graph);
 
     d3.select('#songs').on('change', function selectChanged() {
-      pour.selectedTrackId = this.value;
-      pour.init();
+      var wasStopped = pour.stopped;
+      pour.stop();
+      pour.trackURL = this.value;
+      pour.init(resumePlay);
+
+      function resumePlay() {
+        if (!wasStopped) {
+          pour.play();
+        }
+      }
     });
   }
 };
 
-pour.initOffline = function initOffline() {
+pour.initOffline = function initOffline(done) {
   this.remixer.remixTrack({
     status: 'complete',
     analysis: this.offlineAnalysis,
@@ -103,6 +79,7 @@ pour.initOffline = function initOffline() {
     if (loadPercentage1 === 100 && track1.status === 'ok') {
       this.track = track1;
       this.mixTracks(track1.analysis);
+      done();
     }
   }
   .bind(this));
@@ -316,6 +293,8 @@ return pour;
 }
 
 var pour = createPour();
-pour.init();
+pour.init(logInitDone);
 
-
+function logInitDone() {
+  console.log('init done.');
+}
