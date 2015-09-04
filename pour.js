@@ -46,13 +46,13 @@ var pour = {
 };
 
 pour.init = function init() {
-  if (window.webkitAudioContext === undefined) {
-    error("Sorry, this app needs advanced web audio. Your browser doesn't" +
+  if (window.AudioContext === undefined) {
+    throw new Error("Sorry, this app needs advanced web audio. Your browser doesn't" +
       " support it. Try the latest version of Chrome");
   } 
   else {
-    this.context = new webkitAudioContext();
-    this.audioGain = this.context.createGainNode();
+    this.context = new AudioContext();
+    this.audioGain = this.context.createGain();
     this.audioGain.gain.value = 1;
     this.audioGain.connect(this.context.destination);
 
@@ -206,7 +206,7 @@ pour.play = function play(remixChunks) {
     audioSource.connect(this.audioGain);
     q.audioSource = audioSource;
     // currentlyQueued.push(audioSource);
-    audioSource.noteGrainOn(when, q.start, q.duration);
+    audioSource.start(when, q.start, q.duration);
     this.activeAudioSources.push(audioSource);
     this.updateGraphOnPlay(when, i);
 
@@ -217,7 +217,7 @@ pour.play = function play(remixChunks) {
 pour.stop = function stop() {
   this.stopped = true;
   this.activeAudioSources.forEach(function stopSource(audioSource) {
-    audioSource.noteOff(0);
+    audioSource.stop(0);
   });
   this.activeAudioSources = [];
   this.timeoutHandles.forEach(function cancelTimeout(handle) {
